@@ -1,6 +1,8 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
+ "autoname": "field:item_code",
  "creation": "2026-04-14 10:28:21.949551",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -34,7 +36,8 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Item Code",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "item_name",
@@ -81,10 +84,11 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-14 10:38:08.607074",
+ "modified": "2026-04-14 10:56:58.399223",
  "modified_by": "Administrator",
  "module": "jesc",
  "name": "JESC Items",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
