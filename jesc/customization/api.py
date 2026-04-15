@@ -30,14 +30,23 @@ def get_jesc_items(search=None, page=1):
         conditions = "WHERE " + " AND ".join(word_conditions)
 
     items = frappe.db.sql(f"""
-        SELECT item_code, item_name, description, item_group, selling_rate, uom
+        SELECT 
+            item_code, 
+            item_name, 
+            description, 
+            item_group, 
+            selling_rate, 
+            uom,
+
+            gst,
+            hsn
+
         FROM `tabJESC Items`
         {conditions}
         ORDER BY item_group, item_name
         LIMIT {start}, {page_size}
     """, values, as_dict=True)
 
-    # Total count
     total_count = frappe.db.sql(f"""
         SELECT COUNT(*) as count
         FROM `tabJESC Items`

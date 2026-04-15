@@ -75,15 +75,15 @@ function open_dialog(frm) {
         }
     });
 
-dialog.fields_dict.search.$input.on('blur', function () {
-    if (dialog.get_value('search')) {
-        setTimeout(() => {
-            if (!$(document.activeElement).hasClass('jesc-discount-input')) {
-                dialog.fields_dict.search.$input.focus();
-            }
-        }, 100);
-    }
-});
+    dialog.fields_dict.search.$input.on('blur', function () {
+        if (dialog.get_value('search')) {
+            setTimeout(() => {
+                if (!$(document.activeElement).hasClass('jesc-discount-input')) {
+                    dialog.fields_dict.search.$input.focus();
+                }
+            }, 100);
+        }
+    });
 
     dialog.fields_dict.items_html.$wrapper.html(
         `<div style="padding:20px; text-align:center; color:#888; font-size:13px;">
@@ -256,7 +256,7 @@ function bind_events(dialog, $wrapper) {
     $wrapper.find('.jesc-item-row')
         .off('mousedown click')
         .on('mousedown', function (e) {
-            if ($(e.target).is('input')) return; 
+            if ($(e.target).is('input')) return;
             e.preventDefault();
         })
         .on('click', function (e) {
@@ -366,50 +366,57 @@ function insert_items(frm) {
         let dummy_name = r.message.item_name;
         let dummy_uom = r.message.stock_uom;
 
-        let count = 0;
+        frappe.db.get_list('Item Tax Template', {
+            fields: ['name'],
+        }).then(templates => {
 
-        Object.values(selected_items_map).forEach(item => {
+            let count = 0;
 
-            let row = frm.add_child('items');
-            let d = locals[row.doctype][row.name];
+            Object.values(selected_items_map).forEach(item => {
 
-            let selling = item.selling_rate || 0;
-            let discount = item._discount || 0;
-            let final = selling - discount;
+                let row = frm.add_child('items');
+                let d = locals[row.doctype][row.name];
 
-            d.item_code = dummy;
-            d.item_name = dummy_name;
-            d.uom = dummy_uom;
+                let selling = item.selling_rate || 0;
+                let discount = item._discount || 0;
+                let final = selling - discount;
 
-            d.description = item.description || item.item_name;
+                d.item_code = dummy;
+                d.item_name = dummy_name;
+                d.uom = dummy_uom;
 
-            d.price_list_rate = selling;
-            d.discount_amount = discount;
-            d.rate = final;
+                d.description = item.description || item.item_name;
 
-            d.qty = 1;
-            d.amount = final;
+                d.price_list_rate = selling;
+                d.discount_amount = discount;
+                d.rate = final;
 
-            count++;
+                d.qty = 1;
+                d.amount = final;
+
+                d.gst_hsn_code = item.hsn || "";
+
+                let gst_value = item.gst || 0;
+
+                let matched = templates.find(t =>
+                    t.name.includes(`GST ${gst_value}%`)
+                );
+
+                if (matched) {
+                    d.item_tax_template = matched.name;
+                }
+
+                count++;
+            });
+
+            frm.refresh_field('items');
+
+            frappe.show_alert({
+                message: `${count} item${count > 1 ? 's' : ''} inserted`,
+                indicator: 'green'
+            }, 5);
+
+            selected_items_map = {};
         });
-
-        frm.refresh_field('items');
-
-        frappe.show_alert({
-            message: `${count} item${count > 1 ? 's' : ''} inserted`,
-            indicator: 'green'
-        }, 5);
-
-        selected_items_map = {};
-
-        if (cur_dialog) {
-            let $wrapper = cur_dialog.fields_dict.items_html.$wrapper;
-
-            $wrapper.find('.jesc-item-check').prop('checked', false);
-            $wrapper.find('#jesc-select-all').prop('checked', false);
-            $wrapper.find('.jesc-discount-input').val('0').trigger('input');
-
-            update_summary(cur_dialog);
-        }
     });
 }
