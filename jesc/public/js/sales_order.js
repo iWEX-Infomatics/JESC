@@ -1,5 +1,5 @@
 frappe.ui.form.on('Sales Order', {
-    refresh: function(frm) {
+    refresh: function (frm) {
         setTimeout(() => bind_button(frm), 300);
     }
 });
@@ -9,7 +9,7 @@ let selected_items_map = {};
 // ---------------- BUTTON ----------------
 function bind_button(frm) {
     if (!frm.fields_dict.custom_get_items_from) return;
-    frm.fields_dict.custom_get_items_from.$input.off('click').on('click', function() {
+    frm.fields_dict.custom_get_items_from.$input.off('click').on('click', function () {
         open_dialog(frm);
     });
 }
@@ -33,14 +33,14 @@ function open_dialog(frm) {
             { fieldtype: 'HTML', fieldname: 'pagination_html' }
         ],
         primary_action_label: 'Insert',
-        primary_action: function() {
+        primary_action: function () {
             insert_items(frm);
             dialog.hide();
         }
     });
 
     dialog.set_secondary_action_label('Clear');
-    dialog.set_secondary_action(function() {
+    dialog.set_secondary_action(function () {
         selected_items_map = {};
         dialog.fields_dict.items_html.$wrapper.find('.jesc-item-check').prop('checked', false);
         dialog.fields_dict.items_html.$wrapper.find('#jesc-select-all').prop('checked', false);
@@ -50,18 +50,18 @@ function open_dialog(frm) {
 
     dialog.show();
 
-    dialog.$wrapper.off('click').on('click', function(e) {
+    dialog.$wrapper.off('click').on('click', function (e) {
         e.stopPropagation();
     });
 
-    $(document).on('keydown.jesc_dialog', function(e) {
+    $(document).on('keydown.jesc_dialog', function (e) {
         if (e.key === "Escape") {
             dialog.hide();
             $(document).off('keydown.jesc_dialog');
         }
     });
 
-    dialog.$wrapper.on('keydown', function(e) {
+    dialog.$wrapper.on('keydown', function (e) {
         if (e.key === "Enter") {
             e.preventDefault();
 
@@ -75,13 +75,15 @@ function open_dialog(frm) {
         }
     });
 
-    dialog.fields_dict.search.$input.on('blur', function() {
-        if (dialog.get_value('search')) {
-            setTimeout(() => {
+dialog.fields_dict.search.$input.on('blur', function () {
+    if (dialog.get_value('search')) {
+        setTimeout(() => {
+            if (!$(document.activeElement).hasClass('jesc-discount-input')) {
                 dialog.fields_dict.search.$input.focus();
-            }, 100);
-        }
-    });
+            }
+        }, 100);
+    }
+});
 
     dialog.fields_dict.items_html.$wrapper.html(
         `<div style="padding:20px; text-align:center; color:#888; font-size:13px;">
@@ -113,7 +115,7 @@ function load_items(dialog, page = 1) {
     frappe.call({
         method: 'jesc.customization.api.get_jesc_items',
         args: { search, page },
-        callback: function(r) {
+        callback: function (r) {
             let data = r.message || {};
             render_items(dialog, data.items || []);
             render_pagination(dialog, data.total_pages || 1, page);
@@ -181,7 +183,7 @@ function render_items(dialog, items) {
             <div style="padding:8px; border-right:1px solid #e8eaec; font-size:12px;">${item.item_name || ''}</div>
             <div style="padding:8px; border-right:1px solid #e8eaec; font-size:12px;">${item.item_group || ''}</div>
             <div style="padding:8px; border-right:1px solid #e8eaec; font-size:12px; text-align:right;">
-                ${frappe.format(selling_rate, {fieldtype: 'Currency'})}
+                ${frappe.format(selling_rate, { fieldtype: 'Currency' })}
             </div>
             <div style="padding:6px 8px; border-right:1px solid #e8eaec; text-align:center;">
                 <input type="number" class="jesc-discount-input form-control input-xs"
@@ -194,7 +196,7 @@ function render_items(dialog, items) {
             </div>
             <div class="jesc-final-rate" data-code="${item.item_code}"
                  style="padding:8px; font-size:12px; text-align:right; font-weight:600; color:#2c5f2e;">
-                ${frappe.format(final_rate, {fieldtype: 'Currency'})}
+                ${frappe.format(final_rate, { fieldtype: 'Currency' })}
             </div>
         </div>`;
     });
@@ -230,7 +232,7 @@ function sync_select_all($wrapper) {
 function bind_events(dialog, $wrapper) {
 
     // checkbox stable
-    $wrapper.find('.jesc-item-check').off('change').on('change', function(e) {
+    $wrapper.find('.jesc-item-check').off('change').on('change', function (e) {
 
         e.stopPropagation();
 
@@ -253,10 +255,11 @@ function bind_events(dialog, $wrapper) {
 
     $wrapper.find('.jesc-item-row')
         .off('mousedown click')
-        .on('mousedown', function(e) {
-            e.preventDefault(); 
+        .on('mousedown', function (e) {
+            if ($(e.target).is('input')) return; 
+            e.preventDefault();
         })
-        .on('click', function(e) {
+        .on('click', function (e) {
 
             if ($(e.target).is('input')) return;
 
@@ -267,25 +270,25 @@ function bind_events(dialog, $wrapper) {
             $cb.prop('checked', !$cb.prop('checked')).trigger('change');
         });
 
-    $wrapper.find('#jesc-select-all').off('change').on('change', function() {
+    $wrapper.find('#jesc-select-all').off('change').on('change', function () {
 
         let checked = $(this).is(':checked');
 
-        $wrapper.find('.jesc-item-check').each(function() {
+        $wrapper.find('.jesc-item-check').each(function () {
             $(this).prop('checked', checked).trigger('change');
         });
     });
 
     $wrapper.find('.jesc-discount-input')
         .off('mousedown click')
-        .on('mousedown', function(e) {
+        .on('mousedown', function (e) {
             e.stopPropagation();
         })
-        .on('click', function(e) {
+        .on('click', function (e) {
             e.stopPropagation();
         })
         .off('input')
-        .on('input', function(e) {
+        .on('input', function (e) {
 
             e.stopPropagation();
 
@@ -305,7 +308,7 @@ function bind_events(dialog, $wrapper) {
             let final_rate = selling - discount;
 
             $wrapper.find(`.jesc-final-rate[data-code="${code}"]`).html(
-                frappe.format(final_rate, {fieldtype: 'Currency'})
+                frappe.format(final_rate, { fieldtype: 'Currency' })
             );
 
             if (selected_items_map[code]) {
@@ -342,7 +345,7 @@ function render_pagination(dialog, total_pages, current_page) {
 
     $pg.html(html);
 
-    $pg.find('.page-btn').off('click').on('click', function() {
+    $pg.find('.page-btn').off('click').on('click', function () {
         load_items(dialog, $(this).data('page'));
     });
 }
@@ -361,7 +364,7 @@ function insert_items(frm) {
     frappe.db.get_value('Item', dummy, ['item_name', 'stock_uom']).then(r => {
 
         let dummy_name = r.message.item_name;
-        let dummy_uom  = r.message.stock_uom;
+        let dummy_uom = r.message.stock_uom;
 
         let count = 0;
 
